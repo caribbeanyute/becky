@@ -8,7 +8,7 @@ This file creates your application.
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, json
 from flask_login import login_user, logout_user, current_user, login_required
-from app.models import Customer,Book,Order,OrderItem,Cart,User
+from app.models import Book,Order,OrderItem,Cart,User
 from werkzeug.security import check_password_hash,generate_password_hash
 
 from app.forms import LoginForm,RegisterForm,BookForm

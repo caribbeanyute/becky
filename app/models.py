@@ -28,40 +28,6 @@ class Book(db.Model):
         
 
 
-class Customer(db.Model):
-    __tablename__ = 'customer'
-
-    custID = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(db.String(50), unique=True)
-    username = db.Column(db.String(255), nullable=False)
-    passwordHash = db.Column(db.String(255), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
-    address = db.Column(db.String(255), nullable=False)
-    member = db.Column(db.Boolean, nullable=False)
-
-    def __init__(self, public_id, username, password, name, email, address):
-        self.username = username
-        self.public_id = public_id
-        self.passwordHash = generate_password_hash(password, method='pbkdf2:sha256')
-        self.name = name
-        self.email = email
-        self.address = address
-        self.member = True
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return str(self.custID)  # python 3 support
-
-    def __repr__(self):
-        return '<User %r>' %  self.username
 
 
 
