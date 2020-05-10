@@ -8,10 +8,10 @@ This file creates your application.
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, json
 from flask_login import login_user, logout_user, current_user, login_required
-from app.models import Customer,Book,Order,Manager,Item
-from werkzeug.security import check_password_hash
+from app.models import Customer,Book,Order,OrderItem,Cart,User
+from werkzeug.security import check_password_hash,generate_password_hash
 
-from app.forms import LoginForm,RegisterForm
+from app.forms import LoginForm,RegisterForm,BookForm
 
 
 
@@ -39,33 +39,44 @@ def secure_page():
 # Sec fix never excute uncleant sql
 @app.route('/books')
 def get_books():
-    books = db.engine.execute("SELECT * from book;")
+    books = db.session.query(Book).order_by(Book.title.asc()).all()
     
-    return json.dumps([dict(r) for r in books],default=alchemyencoder)
+    return render_template('books.html', books=books)
+
+@app.route('/cart')
+def cart():
+    print(current_user.id)
 
 
-
-@app.route('/addBook', methods=['POST'])
-def add_book():
-    data = request.get_json()
-    new_Book = Book(data['title'], data['author'], data['price'], data['reorderthres'],  data['stock'])
-    db.session.add(new_Book)
-    db.session.commit()
-    return jsonify({'message': 'registered successfully'})
-
-#FIX
-@app.route('/updateBook<id>', methods=['POST'])
-def update_book(id):
-    data = request.get_json()
-    book = Book.query.get(id)
-    new_Book = Book(data['title'], data['author'], data['price'], data['reorderthres'], data['stoporder'], data['stock'])
-    db.session.commit()
+    total=0
+    books = db.session.query(Book).join(Cart, Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id)
+    for book in books:
+        total += book.price
     
-    return jsonify({'message': 'successfully'})
+    return render_template('cart.html',total=total,books=books)
+
+@app.route('/cart/addBook/<bookid>',methods=['POST'])
+def addBookCart(bookid):
+    if request.method == 'POST':
+        cart = Cart(current_user.id,bookid)
+        db.session.add(cart)
+        db.session.commit()
+    return redirect(url_for('cart'))
+
+
+@app.route('/cart/remBook/<bookid>',methods=['POST'])
+def removeBookCart(bookid):
+    if request.method == 'POST':
+        Cart.query.filter(Cart.custID == current_user.id ).filter(Cart.bookID==bookid).delete()
+        db.session.commit()
+    return redirect(url_for('cart'))
+
+
+
 
 
 @app.route('/register', methods=['POST','GET'])
-def signup_user():
+def register():
     form = RegisterForm()
     # Login and validate the user.
     if request.method == 'POST' and form.validate_on_submit():
@@ -74,10 +85,10 @@ def signup_user():
         username = form.username.data
         password = form.password.data
         name = form.name.data
-        address = form.name.data
-        email = form.name.data
+        address = form.address.data
+        email = form.email.data
         
-        new_user = Customer(public_id="a",username=username,name=name, password=password,email=email, address=address)
+        new_user = User(username=username,name=name, password=password,email=email, address=address)
         db.session.add(new_user)
         db.session.commit()
     
@@ -103,18 +114,19 @@ def login():
         # match a user that is in the database.
         username = form.username.data
         password = form.password.data
+        isManager = form.manager.data
 
         # user = UserProfile.query.filter_by(username=username, password=password)\
         # .first()
         # or
         
-        if True:
-            user = Customer.query.filter_by(username=username).first()
+        if not isManager:
+            user = User.query.filter_by(username=username).first()
             print(user)
         else :
             user = Manager.query.filter_by(username=username).first()
 
-        if user is not None and check_password_hash(user.password, password):
+        if user is not None and check_password_hash(user.pwd_hash, password):
             remember_me = False
 
             if 'remember_me' in request.form:
@@ -150,7 +162,40 @@ def logout():
 # It should take the unicode ID of a user, and return the corresponding user object.
 @login_manager.user_loader
 def load_user(id):
-    return Customer.query.get(int(id))
+    return User.query.get(int(id))
+
+
+
+
+ ## For Mnanager
+
+
+@app.route('/addBook', methods=['GET','POST'])
+def add_book():
+    form = BookForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        new_Book = Book(form.title.data, form.author.data, form.price.data, form.reorderthres.data,  form.stock.data)
+        db.session.add(new_Book)
+        db.session.commit()
+        return redirect(url_for('get_books'))
+    return render_template("add_book.html", form = form)
+
+#FIX
+@app.route('/updateBook/<bookid>', methods=['GET','POST'])
+def update_book(bookid):
+    form = BookForm()
+    book = Book.query.get(bookid)
+    if request.method == 'POST' and form.validate_on_submit():
+        form.populate_obj(book)
+        db.session.commit()
+        return redirect(url_for('get_books'))
+    return render_template("update_book.html", form = form,book =book)
+
+    
+    #new_Book = Book(data['title'], data['author'], data['price'], data['reorderthres'], data['stoporder'], data['stock'])
+    db.session.commit()
+    
+    return render_template("add_book.html", form = form)
 
 
 
@@ -189,6 +234,7 @@ def add_header(response):
     response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
+
 
 
 @app.errorhandler(404)

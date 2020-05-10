@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>Book</h1>
+<div class="container">
+	
+	<table id="cart" class="table table-hover table-condensed">
+    				<thead>
+						<tr>
+							<th style="width:50%">Product</th>
+							<th style="width:10%">Price</th>
+							<th style="width:8%">Stock</th>
+							{% if current_user.urole=="cust" and current_user.is_authenticated %}
+							<th style="width:9%">Add to Cart</th>
+							{% elif current_user.urole=="manager" and  current_user.is_authenticated%}
+							<th style="width:9%">Manage Book</th>
+							{% endif %}
+
+						</tr>
+					</thead>
+					<tbody>
+                        {%for book in books%} 
+						<tr>
+							<td data-th="Product">
+								<div class="row">
+									<div class="col-sm-2 hidden-xs"><img src="http://placehold.it/100x100" alt="..." class="img-responsive"/></div>
+									<div class="col-sm-10">
+										<h4 class="nomargin">{{book.title}}</h4>
+										<p>{{book.author}}</p>
+									</div>
+								</div>
+							</td>
+							<td data-th="Price">${{'%0.2f'|format(book.price|float)}}</td>
+							<td data-th="Quantity">
+								<p>{{book.stock}}</p>
+							</td>
+							{% if current_user.urole=="cust" and current_user.is_authenticated %}
+							<td class="actions" data-th="">
+								<form action="{{url_for('addBookCart' ,bookid=(book.bookID|string))}}" method="POST">
+								<button class="btn btn-info btn-sm" type="submit"  href=""><i class="fa fa-refresh">Add</i></button>
+								</form>							
+							</td>
+							{% elif current_user.urole=="manager" and  current_user.is_authenticated%}
+							<td class="actions" data-th="">
+								<form action="{{url_for('update_book' ,bookid=(book.bookID|string))}}" method="GET">
+								<button class="btn btn-info btn-sm" type="submit"  href=""><i class="fa fa-refresh">Update</i></button>
+								</form>							
+							</td>
+
+							{% endif %}
+
+                        </tr>
+                        {%endfor%} 
+					</tbody>
+					<tfoot>
+						<tr class="visible-xs">
+							<td class="text-center"><strong>BUY BOOK!!!</strong></td>
+							<td colspan="4" class="hidden-xs"></td>
+						</tr>
+						<tr>
+							
+						</tr>
+					</tfoot>
+				</table>
+				{% if current_user.urole=="cust" and current_user.is_authenticated %}
+				<a href="{{ url_for('cart') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> View Cart</a></td>
+				{% elif current_user.urole=="manager" and  current_user.is_authenticated%}
+				<div></div>
+				{% endif %}
+
+				
+</div>
+
+{% endblock %}

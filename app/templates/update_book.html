@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<div class="card bg-light">
+    {% include 'flash_messages.html' %}
+    <article class="card-body mx-auto" style="max-width: 400px;">
+        <h2 class="card-title mt-3 text-center">Update Book</h2>
+        
+        <form action="" method="POST">
+            {{ form.csrf_token }}
+        <div class="form-group input-group">
+            {{ form.title.label }}
+            {{ form.title(class='form-control', placeholder="Title", value=book.title) }}
+        </div> <!-- form-group// -->
+        <div class="form-group input-group">
+            {{ form.author.label }}
+            {{ form.author(class='form-control', placeholder="Author", value= book.author) }}
+        </div> <!-- form-group// -->
+
+        <div class="form-group input-group">
+            {{ form.price.label }}
+            {{ form.price(class='form-control', placeholder="Price",value=book.price) }}
+        </div> <!-- form-group// -->
+        
+      
+        <div class="form-group input-group">
+            {{ form.stock.label }}
+            {{ form.stock(class='form-control', input="number",placeholder="Stock of Books",value=book.stock) }}
+        </div> <!-- form-group// -->
+        <div class="form-group input-group">
+            {{ form.reorderthres.label }}
+            {{ form.reorderthres(class='form-control', input="number", placeholder="...",value=book.reorderthres) }}
+        </div> <!-- form-group// -->                                  
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block" href="{{ url_for('add_book') }}">Update Book</button>
+        </div> <!-- form-group// -->                                                                    
+    </form>
+    </article>
+    </div> <!-- card.// -->
+{% endblock %}

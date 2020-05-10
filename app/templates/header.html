@@ -1,13 +1,21 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-  <span class="navbar-brand mb-0 h1">Demo User App</span>
+  <span class="navbar-brand mb-0 h1">BECKY</span>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
+    {% if current_user.urole=="cust" and current_user.is_authenticated %}
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
         <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only">(current)</span></a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('get_books') }}">Books</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('cart') }}">Cart</a>
+      </li>
+
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('about') }}">About</a>
       </li>
@@ -15,6 +23,35 @@
         <a class="nav-link" href="{{ url_for('secure_page') }}">Secure Page</a>
       </li>
     </ul>
+    {% elif current_user.urole=="manager" and  current_user.is_authenticated%}
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('get_books') }}">Books</a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Manage BECS
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="{{ url_for('add_book') }}">Add Item</a>
+          <a class="dropdown-item" href="{{ url_for('get_books') }}">Add Promotion</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('about') }}">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('secure_page') }}">Secure Page</a>
+      </li>
+    </ul>
+
+
+    {% endif %}
 
     <ul class="navbar-nav">
       {% if current_user.is_authenticated %}
