@@ -99,10 +99,10 @@ class OrderItem(db.Model):
 
 class Promotion(db.Model):
     __tablename__ = 'promotions'
-
-    pID = db.Column(db.Integer, primary_key=True)
+    pID = db.Column(db.Integer,primary_key=True)
+    promoCode = db.Column(db.String(25))
     percoff = db.Column(db.Float(asdecimal=True), nullable=False)
-    expDate = db.Column
+    expDate = db.Column(db.DateTime)
 
 
 class Cart(db.Model):
@@ -114,3 +114,9 @@ class Cart(db.Model):
     def __init__(self,custID,bookID):
         self.custID = custID
         self.bookID = bookID
+
+class AppliedPromotion(db.Model):
+    __tablename__ = 'appliedpromotions'
+    apID = db.Column(db.Integer, primary_key=True)
+    pID = db.Column(db.Integer)
+    cID = db.Column(db.Integer)
