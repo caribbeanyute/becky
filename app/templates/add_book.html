@@ -2,33 +2,33 @@
 
 {% block main %}
 
-<div class="card bg-light">
+<div class="">
     {% include 'flash_messages.html' %}
-    <article class="card-body mx-auto" style="max-width: 400px;">
+    <article class="card-body mx-auto" style="max-width: 400px;"></article>
         <h2 class="card-title mt-3 text-center">Add Book</h2>
         
         <form action="" method="POST">
             {{ form.csrf_token }}
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.title.label }}
             {{ form.title(class='form-control', placeholder="Title") }}
         </div> <!-- form-group// -->
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.author.label }}
             {{ form.author(class='form-control', placeholder="Author") }}
         </div> <!-- form-group// -->
 
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.price.label }}
             {{ form.price(class='form-control', placeholder="Price") }}
         </div> <!-- form-group// -->
         
       
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.stock.label }}
             {{ form.stock(class='form-control', input="number",placeholder="Stock of Books") }}
         </div> <!-- form-group// -->
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.reorderthres.label }}
             {{ form.reorderthres(class='form-control', input="number", placeholder="...") }}
         </div> <!-- form-group// -->                                  

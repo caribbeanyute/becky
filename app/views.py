@@ -8,16 +8,20 @@ This file creates your application.
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, json
 from flask_login import login_user, logout_user, current_user, login_required
-from app.models import Book,Order,OrderItem,Cart,User
+from app.models import Book,Order,OrderItem,Cart,User,Promotion,AppliedPromotion
 from werkzeug.security import check_password_hash,generate_password_hash
 
-from app.forms import LoginForm,RegisterForm,BookForm
+from app.forms import LoginForm,RegisterForm,BookForm,PromotionForm,ApplyPromotionForm,PaymentForm
+
+from flask_mail import Message
+from app import mail
 
 
 
 @app.route('/')
 def home():
     """Render website's home page."""
+    #print(render_template('home.html'))
     return render_template('home.html')
 
 
@@ -75,6 +79,116 @@ def removeBookCart(bookid):
 
 
 
+
+@app.route('/applyPromotion',methods=['POST','GET'])
+def applyPromo():
+    appForm = ApplyPromotionForm()
+    if request.method == 'POST':
+        chk = db.session.query(AppliedPromotion).join(Promotion, AppliedPromotion.pID==Promotion.pID).filter(Promotion.promoCode==appForm.promocode.data).first()
+        if chk:
+            flash('Promotion Code Already Applied', 'danger')
+            return redirect(url_for('checkOut'))
+        else:
+            cart = Cart.query.filter(Cart.custID == current_user.id ).first()
+            promo = Promotion.query.filter(Promotion.promoCode == appForm.promocode.data).first()
+            app = AppliedPromotion(promo.pID,cart.cID)
+            db.session.add(app)
+            db.session.commit()
+            return redirect(url_for('checkOut'))
+    return render_template('applyPromotion.html',form=appForm)
+
+
+# Fix for more than one promo to be applied
+@app.route('/checkOut',methods=['POST','GET'])
+def checkOut():
+    cart = Cart.query.filter(Cart.custID == current_user.id ).first()
+    
+    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).all()
+    
+
+    total=0
+    books = db.session.query(Book).join(Cart, Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id)
+    for book in books:
+        total += book.price
+    discount, di = 0,0
+    for prom in applied:
+        di+=1
+        discount += prom.percoff
+    print(discount,di)
+    total = total * (1-(discount/(di*100)))
+        
+    
+    return render_template('checkout.html',total=total,books=books,applied=applied)
+
+
+@app.route('/order')
+def ordr():
+    cart = Cart.query.filter(Cart.custID == current_user.id ).first()
+    
+    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).all()
+    
+
+    total=0
+    books = db.session.query(Book).join(Cart, Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id)
+    for book in books:
+        total += book.price
+    subtotal = total
+    discount, di = 0,0
+    for prom in applied:
+        di+=1
+        discount += prom.percoff
+    print(discount,di)
+    total = total * (1-(discount/(di*100)))
+    user = User.query.get(current_user.id )
+    return render_template('order/order.html',user=user,books=books,app=applied,subtotal=subtotal,total=total,discount=discount)
+    
+    
+
+
+
+@app.route('/purchase',methods=['GET','POST'])
+def purchase():
+    form = PaymentForm()
+    user = User.query.filter(User.id==current_user.id).first()
+    cart = Cart.query.filter(Cart.custID == current_user.id ).all()
+
+    
+
+    if request.method == 'POST' and form.validate_on_submit():
+        order = Order(user.username)
+        db.session.add(order)
+        db.session.commit()
+        books = db.session.query(Book).join(Cart,Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id).all()
+        for book in books:
+            #Removing  book from stock
+            bk = Book.query.filter(Book.bookID==book.bookID).first()
+            bk.stock = Book.stock - 1
+
+            # Recording Sale
+            orderIt = OrderItem(order.ordID,book.bookID,book.title,book.author,book.price)
+            db.session.add(orderIt)
+            
+
+
+
+        #Clearing Cart and Promo
+        subject = "Order"
+        message = "Thank You"
+        msg = Message(subject, sender = 'order@becky.com', recipients = [user.email])
+        msg.body = message
+        msg.html = ordr()
+        mail.send(msg)
+
+
+
+    db.session.commit()
+
+
+    return render_template("payment.html",form=form)
+
+
+
+
 @app.route('/register', methods=['POST','GET'])
 def register():
     form = RegisterForm()
@@ -120,11 +234,7 @@ def login():
         # .first()
         # or
         
-        if not isManager:
-            user = User.query.filter_by(username=username).first()
-            print(user)
-        else :
-            user = Manager.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username).first()
 
         if user is not None and check_password_hash(user.pwd_hash, password):
             remember_me = False
@@ -198,6 +308,16 @@ def update_book(bookid):
     return render_template("add_book.html", form = form)
 
 
+
+@app.route('/addPromotion', methods=['GET','POST'])
+def addPromo():
+    form = PromotionForm()
+    print(form.validate_on_submit())
+    if request.method == 'POST' and form.validate_on_submit():
+        promo = Promotion(promoCode=form.promocode.data,percoff=form.percentageOff.data,expDate=form.expDate.data)
+        db.session.add(promo)
+        db.session.commit()
+    return render_template("promotion.html", form = form)
 
 
 

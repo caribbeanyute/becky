@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>CheckOut</h1>
+<div class="container">
+	<table id="cart" class="table table-hover table-condensed">
+    				<thead>
+						<tr>
+							<th style="width:50%">Product</th>
+							<th style="width:10%">Price</th>
+							<th style="width:8%">Quantity</th>
+							<th style="width:8%">Remove</th>
+						</tr>
+					</thead>
+					<tbody>
+                        {%for book in books%} 
+						<tr>
+							<td data-th="Product">
+								<div class="row">
+									<div class="col-sm-2 hidden-xs"><img src="http://placehold.it/100x100" alt="..." class="img-responsive"/></div>
+									<div class="col-sm-10">
+										<h4 class="nomargin">{{book.title}}</h4>
+										<p>{{book.author}}</p>
+									</div>
+								</div>
+							</td>
+							<td data-th="Price">${{'%0.2f'|format(book.price|float)}}</td>
+							<td data-th="Quantity">
+								<input type="number" class="form-control text-center" value="1">
+							</td>
+							<td class="actions" data-th="Remove">
+								<form action="{{url_for('removeBookCart' ,bookid=(book.bookID|string))}}" method="POST">
+								<button class="btn btn-danger btn-sm" type="submit"><i class="fa fa-trash-o">Remove</i></button>
+								</form>							
+							</td>
+
+                        </tr>
+                        {%endfor%} 
+					</tbody>
+					<tfoot>
+						<tr>
+							<td><a href="{{ url_for('get_books') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> Continue Shopping</a></td>
+							<td colspan="4" class="hidden-xs"></td>
+							<td class="hidden-xs text-center"><strong>Total ${{'%0.2f'|format(total|float)}}</strong></td>
+							<td><a href="#" class="btn btn-success btn-block">Checkout <i class="fa fa-angle-right"></i></a></td>
+						</tr>
+					</tfoot>
+                </table>
+                <div >
+					<a href="{{ url_for('applyPromo') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> Apply Promotion</a>
+
+				{%for app in applied%}
+				<h6>{{app.promoCode}}</h6>
+				{%endfor%}
+
+    
+                </div>
+
+			
+</div>
+
+{% endblock %}

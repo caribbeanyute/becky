@@ -42,19 +42,13 @@
 							<td><a href="{{ url_for('get_books') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> Continue Shopping</a></td>
 							<td colspan="4" class="hidden-xs"></td>
 							<td class="hidden-xs text-center"><strong>Total ${{'%0.2f'|format(total|float)}}</strong></td>
-							<td><a href="#" class="btn btn-success btn-block">Checkout <i class="fa fa-angle-right"></i></a></td>
+							<td><a href="{{url_for('checkOut')}}" class="btn btn-success btn-block">Checkout <i class="fa fa-angle-right"></i></a></td>
 						</tr>
 					</tfoot>
 				</table>
 
-			<div >
-				<form action="" method="post">
-					<h3>Add Promotion</h3>
-					<input type="text">
-					<a href="#" class="btn btn-success btn-block">Add<i class="fa"></i></a>
-				</form>
 
-			</div>
+	
 </div>
 
 {% endblock %}

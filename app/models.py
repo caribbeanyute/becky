@@ -1,5 +1,6 @@
 from . import db
 from werkzeug.security import generate_password_hash
+import datetime
 
 
 class Book(db.Model):
@@ -41,7 +42,6 @@ class User(db.Model):
     is_active = db.Column(db.Boolean,default=False)
     urole = db.Column(db.String(80))
     name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
     address = db.Column(db.String(255), nullable=False)
     member = db.Column(db.Boolean, nullable=False)
 
@@ -82,6 +82,9 @@ class Order(db.Model):
     time = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP"))
     cust = db.Column(db.String(255), nullable=False)
 
+    def __init__(self,cust):
+        self.cust = cust
+
 
 class OrderItem(db.Model):
     __tablename__ = 'items'
@@ -95,6 +98,13 @@ class OrderItem(db.Model):
 
     order = db.relationship('Order')
 
+    def __init__(self,ordID,bookID,title,author,price):
+        self.ordID = ordID
+        self.bookID = bookID
+        self.title = title
+        self.author = author
+        self.price = price
+
 
 
 class Promotion(db.Model):
@@ -103,6 +113,10 @@ class Promotion(db.Model):
     promoCode = db.Column(db.String(25))
     percoff = db.Column(db.Float(asdecimal=True), nullable=False)
     expDate = db.Column(db.DateTime)
+    def __init__(self,promoCode,percoff,expDate):
+        self.promoCode = promoCode
+        self.percoff = percoff
+        self.expDate = datetime.datetime.strptime(expDate, '%d/%m/%Y')
 
 
 class Cart(db.Model):
@@ -120,3 +134,6 @@ class AppliedPromotion(db.Model):
     apID = db.Column(db.Integer, primary_key=True)
     pID = db.Column(db.Integer)
     cID = db.Column(db.Integer)
+    def __init__(self,pID,cID):
+        self.pID = pID
+        self.cID = cID
