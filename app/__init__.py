@@ -5,7 +5,8 @@ from flask_mail import Mail
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "this is a super secure key"  # you should make this more random and unique
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:rootpassword@127.0.0.1/becky"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:rootpassword@127.0.0.1/becky"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://uwbumemg2wancmff:gM28MQ0VW3uYuGRcxgBt@bxdtcyaufpexkkxri9z9-mysql.services.clever-cloud.com:3306/bxdtcyaufpexkkxri9z9"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # added just to suppress a warning
 
 db = SQLAlchemy(app)
