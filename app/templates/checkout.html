@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main %}
-<h1>CheckOut</h1>
+<h1>Checkout</h1>
 <div class="container">
 	<table id="cart" class="table table-hover table-condensed">
     				<thead>
@@ -42,16 +42,21 @@
 							<td><a href="{{ url_for('get_books') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> Continue Shopping</a></td>
 							<td colspan="4" class="hidden-xs"></td>
 							<td class="hidden-xs text-center"><strong>Total ${{'%0.2f'|format(total|float)}}</strong></td>
-							<td><a href="#" class="btn btn-success btn-block">Checkout <i class="fa fa-angle-right"></i></a></td>
+							<td><a href="{{ url_for('purchase') }}" class="btn btn-success btn-block">Purchase<i class="fa fa-angle-right"></i></a></td>
 						</tr>
 					</tfoot>
                 </table>
                 <div >
 					<a href="{{ url_for('applyPromo') }}" class="btn btn-warning"><i class="fa fa-angle-left"></i> Apply Promotion</a>
-
-				{%for app in applied%}
-				<h6>{{app.promoCode}}</h6>
-				{%endfor%}
+				{% if applied%}
+				<h3>Applied Promotion</h3>
+					<hr>
+						{%for app in applied%}
+							<h6>{{app.promoCode}}</h6>
+						{%endfor%}
+					<hr/>
+					
+				{% endif %}
 
     
                 </div>
