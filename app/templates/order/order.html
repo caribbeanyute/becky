@@ -72,12 +72,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {%for promo in app%} 
+                                    
                                     <tr>
-                                        <td>{{promo.promoCode}}</td>
-                                        <td>{{'%0.2f'|format(promo.percoff|float)}}</td>
+                                        <td>{{app.promoCode}}</td>
+                                        <td>{{'%0.2f'|format(app.percoff|float)}}</td>
                                     </tr>
-                                    {%endfor%}
+                                    
                                 </tbody>                                
                             </table>
                         </div>

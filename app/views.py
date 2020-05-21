@@ -4,14 +4,16 @@ Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
+import datetime
 
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, json
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, json, g, session
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Book,Order,OrderItem,Cart,User,Promotion,AppliedPromotion
 from werkzeug.security import check_password_hash,generate_password_hash
 
 from app.forms import LoginForm,RegisterForm,BookForm,PromotionForm,ApplyPromotionForm,PaymentForm
+from app.utils import checkStock
 
 from flask_mail import Message
 from app import mail
@@ -37,6 +39,14 @@ def about():
 def secure_page():
     """Render a secure page on our website that only logged in users can access."""
     return render_template('secure_page.html')
+
+
+@app.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = datetime.timedelta(minutes=30)
+    session.modified = True
+    g.user = current_user
 
 
 
@@ -88,7 +98,9 @@ def applyPromo():
         if chk:
             flash('Promotion Code Already Applied', 'danger')
             return redirect(url_for('checkOut'))
-        else:
+        elif Promotion.query.filter(Promotion.promoCode==appForm.promocode.data).first().expDate < datetime.datetime.now():
+            return redirect(url_for('checkOut'))
+        elif not chk:
             cart = Cart.query.filter(Cart.custID == current_user.id ).first()
             promo = Promotion.query.filter(Promotion.promoCode == appForm.promocode.data).first()
             app = AppliedPromotion(promo.pID,cart.cID)
@@ -102,30 +114,33 @@ def applyPromo():
 @app.route('/checkOut',methods=['POST','GET'])
 def checkOut():
     cart = Cart.query.filter(Cart.custID == current_user.id ).first()
+    if not cart:
+        return redirect(url_for('get_books'))
+
     
-    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).all()
+    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).first()
     
 
     total=0
     books = db.session.query(Book).join(Cart, Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id)
     for book in books:
         total += book.price
-    discount, di = 0,0
-    for prom in applied:
-        di+=1
-        discount += prom.percoff
-    print(discount,di)
-    total = total * (1-(discount/(di*100)))
+
+    #print(discount,di)
+    if applied:
+        total = total * (1-(applied.percoff/(100)))
         
     
     return render_template('checkout.html',total=total,books=books,applied=applied)
 
 
-@app.route('/order')
 def ordr():
     cart = Cart.query.filter(Cart.custID == current_user.id ).first()
+    if not cart:
+        return None
+
     
-    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).all()
+    applied = Promotion.query.join(AppliedPromotion,Promotion.pID==AppliedPromotion.pID).filter(AppliedPromotion.cID==cart.cID).first()
     
 
     total=0
@@ -133,12 +148,15 @@ def ordr():
     for book in books:
         total += book.price
     subtotal = total
-    discount, di = 0,0
-    for prom in applied:
-        di+=1
-        discount += prom.percoff
-    print(discount,di)
-    total = total * (1-(discount/(di*100)))
+
+
+    discount=0
+    if not applied:
+        applied = []
+
+    if applied:
+        total = total * (1-(applied.percoff/(100)))
+        discount=(applied.percoff/(100))
     user = User.query.get(current_user.id )
     return render_template('order/order.html',user=user,books=books,app=applied,subtotal=subtotal,total=total,discount=discount)
     
@@ -159,6 +177,15 @@ def purchase():
         db.session.add(order)
         db.session.commit()
         books = db.session.query(Book).join(Cart,Book.bookID==Cart.bookID).filter(Cart.custID==current_user.id).all()
+        
+        
+        subject = "Order"
+        message = "Thank You"
+        msg = Message(subject, sender = 'order@becky.com', recipients = [user.email])
+        msg.body = message
+        msg.html = ordr()
+        mail.send(msg)
+        
         for book in books:
             #Removing  book from stock
             bk = Book.query.filter(Book.bookID==book.bookID).first()
@@ -167,19 +194,18 @@ def purchase():
             # Recording Sale
             orderIt = OrderItem(order.ordID,book.bookID,book.title,book.author,book.price)
             db.session.add(orderIt)
-            
+        
+        
+        
+            #Clearing Cart and Promo
+            for item in cart:
+                AppliedPromotion.query.filter(AppliedPromotion.cID == item.cID).delete()
+
+            Cart.query.filter(Cart.custID == current_user.id ).delete()
 
 
-
-        #Clearing Cart and Promo
-        subject = "Order"
-        message = "Thank You"
-        msg = Message(subject, sender = 'order@becky.com', recipients = [user.email])
-        msg.body = message
-        msg.html = ordr()
-        mail.send(msg)
-
-
+        checkStock()
+        return redirect(url_for('get_books'))
 
     db.session.commit()
 
@@ -201,8 +227,9 @@ def register():
         name = form.name.data
         address = form.address.data
         email = form.email.data
+        isMember = form.member.data
         
-        new_user = User(username=username,name=name, password=password,email=email, address=address)
+        new_user = User(username=username,name=name, password=password,email=email, address=address,is_member= isMember)
         db.session.add(new_user)
         db.session.commit()
     
@@ -308,6 +335,14 @@ def update_book(bookid):
     return render_template("add_book.html", form = form)
 
 
+@app.route('/deleteBook/<bookid>', methods=['GET','POST'])
+def delete_book(bookid):
+    book = Book.query.get(bookid)
+    if request.method == 'POST' and book:
+        Book.query.filter(Book.bookID==bookid).delete()
+        db.session.commit()
+        return redirect(url_for('get_books'))
+    return redirect(url_for('get_books'))
 
 @app.route('/addPromotion', methods=['GET','POST'])
 def addPromo():

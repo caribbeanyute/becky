@@ -14,12 +14,12 @@ class Book(db.Model):
     stoporder = db.Column(db.Boolean, nullable=False)
     stock = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, title, author, price, reorderthres, stock):
+    def __init__(self, title, author, price, reorderthres, stock, stoporder=False):
         self.title=title
         self.author=author
         self.price = price
         self.reorderthres = reorderthres
-        self.stoporder = False
+        self.stoporder = stoporder
         self.stock = stock
 
     def as_dict(self):
@@ -46,7 +46,7 @@ class User(db.Model):
     member = db.Column(db.Boolean, nullable=False)
 
 
-    def __init__(self,username,password,email,name,address,is_member=False,urole="cust"):
+    def __init__(self,username,password,email,name,address,is_member=True,urole="cust"):
         self.username = username
         self.pwd_hash = generate_password_hash(password, method='pbkdf2:sha256')
         self.email = email
@@ -54,7 +54,7 @@ class User(db.Model):
         self.name = name
         self.email = email
         self.address = address
-        self.member = True
+        self.member = is_member
         
 
     def get_id(self):

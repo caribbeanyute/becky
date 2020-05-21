@@ -9,29 +9,34 @@
         
         <form action="" method="POST">
             {{ form.csrf_token }}
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.name.label }}
             {{ form.name(class='form-control', placeholder="Fullname") }}
         </div> <!-- form-group// -->
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.email.label }}
             {{ form.email(class='form-control', placeholder="Email") }}
         </div> <!-- form-group// -->
 
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.address.label }}
             {{ form.address(class='form-control', placeholder="Address") }}
         </div> <!-- form-group// -->
         
       
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.username.label }}
             {{ form.username(class='form-control', placeholder="Username") }}
         </div> <!-- form-group// -->
-        <div class="form-group input-group">
+        <div class="form-group">
             {{ form.password.label }}
             {{ form.password(class='form-control', input="password", placeholder="...") }}
-        </div> <!-- form-group// -->                                  
+        </div>
+        <div class="form-group input-group">
+            {{ "I would like to be a member:     " }}
+            {{ form.member(class='form-control') }}
+        </div>
+                                     
         <div class="form-group">
             <button type="submit" class="btn btn-primary btn-block"> Register  </button>
         </div> <!-- form-group// -->      

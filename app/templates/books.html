@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main %}
-<h1>Book</h1>
+<h1>Books</h1>
 <div class="container">
 	
 	<table id="cart" class="table table-hover table-condensed">
@@ -45,7 +45,7 @@
 								<form action="{{url_for('update_book' ,bookid=(book.bookID|string))}}" method="GET">
 								<button class="btn btn-info btn-sm" type="submit"  href=""><i class="fa fa-refresh">Update</i></button>
 								</form>
-								<form action="{{url_for('update_book' ,bookid=(book.bookID|string))}}" method="GET">
+								<form action="{{url_for('delete_book' ,bookid=(book.bookID|string))}}" method="POST">
 									<button class="btn btn-danger btn-sm" type="submit"  href=""><i class="fa fa-refresh">Delete</i></button>
 									</form>						
 							</td>
@@ -57,7 +57,7 @@
 					</tbody>
 					<tfoot>
 						<tr class="visible-xs">
-							<td class="text-center"><strong>BUY BOOK!!!</strong></td>
+							<td class="text-center"><strong></strong></td>
 							<td colspan="4" class="hidden-xs"></td>
 						</tr>
 						<tr>

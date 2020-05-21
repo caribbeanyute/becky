@@ -33,6 +33,7 @@ class BookForm(FlaskForm):
     price = DecimalField('Price', validators=[DataRequired()])
     stock = IntegerField('Stock', validators=[DataRequired()])
     reorderthres = IntegerField('Reorder Threshold', validators=[DataRequired()])
+    stoporder = BooleanField('Stop Order')
 
 
 class PaymentForm(FlaskForm):

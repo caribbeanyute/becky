@@ -31,7 +31,11 @@
         <div class="form-group">
             {{ form.reorderthres.label }}
             {{ form.reorderthres(class='form-control', input="number", placeholder="...",value=book.reorderthres) }}
-        </div> <!-- form-group// -->                                  
+        </div> <!-- form-group// -->  
+        <div class="form-group">
+            {{ form.stoporder.label }}
+            {{ form.stoporder(class='form-control', value=book.stoporder) }}
+        </div> <!-- form-group// -->                                          
         <div class="form-group">
             <button type="submit" class="btn btn-primary btn-block" href="{{ url_for('add_book') }}">Update Book</button>
         </div> <!-- form-group// -->                                                                    
