@@ -20,6 +20,8 @@ from app import mail
 
 
 
+
+
 @app.route('/')
 def home():
     """Render website's home page."""
@@ -75,6 +77,7 @@ def addBookCart(bookid):
         cart = Cart(current_user.id,bookid)
         db.session.add(cart)
         db.session.commit()
+        flash('Book Successfully Added', 'success')
     return redirect(url_for('cart'))
 
 
@@ -83,6 +86,7 @@ def removeBookCart(bookid):
     if request.method == 'POST':
         Cart.query.filter(Cart.custID == current_user.id ).filter(Cart.bookID==bookid).delete()
         db.session.commit()
+        flash('Book Removed', 'danger')
     return redirect(url_for('cart'))
 
 
@@ -99,6 +103,7 @@ def applyPromo():
             flash('Promotion Code Already Applied', 'danger')
             return redirect(url_for('checkOut'))
         elif Promotion.query.filter(Promotion.promoCode==appForm.promocode.data).first().expDate < datetime.datetime.now():
+            flash('Promotion Expired Sorry :(', 'danger')
             return redirect(url_for('checkOut'))
         elif not chk:
             cart = Cart.query.filter(Cart.custID == current_user.id ).first()
@@ -106,6 +111,7 @@ def applyPromo():
             app = AppliedPromotion(promo.pID,cart.cID)
             db.session.add(app)
             db.session.commit()
+            flash('Promotion Code Applied', 'success')
             return redirect(url_for('checkOut'))
     return render_template('applyPromotion.html',form=appForm)
 
@@ -202,9 +208,9 @@ def purchase():
                 AppliedPromotion.query.filter(AppliedPromotion.cID == item.cID).delete()
 
             Cart.query.filter(Cart.custID == current_user.id ).delete()
-
-
+        flash('Order Successfully Completed', 'success')
         checkStock()
+        
         return redirect(url_for('get_books'))
 
     db.session.commit()
@@ -232,6 +238,7 @@ def register():
         new_user = User(username=username,name=name, password=password,email=email, address=address,is_member= isMember)
         db.session.add(new_user)
         db.session.commit()
+        flash('Successfully Registered', 'success')
     
     return render_template('register.html', form=form)
 

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 
 {% block main %}
+  {% include 'flash_messages.html' %}
   <div class="login-form text-center">
     <h2>Please Log in</h2>
-    {% include 'flash_messages.html' %}
+    
     <form action="" method="post">
       {{ form.csrf_token }}
       <div class="form-group">
