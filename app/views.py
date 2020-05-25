@@ -77,7 +77,7 @@ def addBookCart(bookid):
         cart = Cart(current_user.id,bookid)
         db.session.add(cart)
         db.session.commit()
-        flash('Book Successfully Added', 'success')
+        flash('Book Successfully Added to cart', 'success')
     return redirect(url_for('cart'))
 
 
@@ -239,6 +239,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         flash('Successfully Registered', 'success')
+        redirect(url_for('get_books'))
+
+
+    if request.method == 'POST' and not form.validate_on_submit():
+        flash('Error in form, please check input', 'danger')
     
     return render_template('register.html', form=form)
 
@@ -321,6 +326,7 @@ def add_book():
         new_Book = Book(form.title.data, form.author.data, form.price.data, form.reorderthres.data,  form.stock.data)
         db.session.add(new_Book)
         db.session.commit()
+        flash('Book Successfully Added', 'success')
         return redirect(url_for('get_books'))
     return render_template("add_book.html", form = form)
 
@@ -332,6 +338,7 @@ def update_book(bookid):
     if request.method == 'POST' and form.validate_on_submit():
         form.populate_obj(book)
         db.session.commit()
+        flash('Book Successfully Updated', 'success')
         return redirect(url_for('get_books'))
     return render_template("update_book.html", form = form,book =book)
 
@@ -348,6 +355,7 @@ def delete_book(bookid):
     if request.method == 'POST' and book:
         Book.query.filter(Book.bookID==bookid).delete()
         db.session.commit()
+        flash('Book Successfully Removed', 'success')
         return redirect(url_for('get_books'))
     return redirect(url_for('get_books'))
 
@@ -359,6 +367,7 @@ def addPromo():
         promo = Promotion(promoCode=form.promocode.data,percoff=form.percentageOff.data,expDate=form.expDate.data)
         db.session.add(promo)
         db.session.commit()
+        flash('Promotion Added', 'success')
     return render_template("promotion.html", form = form)
 
 
