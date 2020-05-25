@@ -297,7 +297,7 @@ def login():
             flash('Logged in successfully.', 'success')
 
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('home'))
+            return redirect(next_page or url_for('get_books'))
         else:
             flash('Username or Password is incorrect.', 'danger')
             #return redirect

@@ -15,13 +15,14 @@
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('cart') }}">Cart</a>
       </li>
-
+      <!--
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('about') }}">About</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('secure_page') }}">Secure Page</a>
       </li>
+      -->
     </ul>
     {% elif current_user.urole=="manager" and  current_user.is_authenticated%}
     <ul class="navbar-nav mr-auto">
@@ -50,7 +51,8 @@
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('secure_page') }}">Secure Page</a>
       </li>
-      -->
+      --> 
+      
     </ul>
 
 
