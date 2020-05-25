@@ -98,7 +98,8 @@ def removeBookCart(bookid):
 def applyPromo():
     appForm = ApplyPromotionForm()
     if request.method == 'POST':
-        chk = db.session.query(AppliedPromotion).join(Promotion, AppliedPromotion.pID==Promotion.pID).filter(Promotion.promoCode==appForm.promocode.data).first()
+        cart = db.session.query(Cart).filter(Cart.custID==current_user.id).first()
+        chk = db.session.query(AppliedPromotion).join(Promotion, AppliedPromotion.pID==Promotion.pID).filter(Promotion.promoCode==appForm.promocode.data).filter(AppliedPromotion.cID==cart.custID).first()
         if chk:
             flash('Promotion Code Already Applied', 'danger')
             return redirect(url_for('checkOut'))
@@ -174,7 +175,7 @@ def ordr():
 def purchase():
     form = PaymentForm()
     user = User.query.filter(User.id==current_user.id).first()
-    cart = Cart.query.filter(Cart.custID == current_user.id ).all()
+    cart = Cart.query.filter(Cart.custID == current_user.id ).first()
 
     
 
@@ -204,10 +205,11 @@ def purchase():
         
         
             #Clearing Cart and Promo
-            for item in cart:
-                AppliedPromotion.query.filter(AppliedPromotion.cID == item.cID).delete()
+            #for item in cart:
 
-            Cart.query.filter(Cart.custID == current_user.id ).delete()
+        AppliedPromotion.query.filter(AppliedPromotion.cID == cart.cID).delete()
+        Cart.query.filter(Cart.custID == current_user.id ).delete()
+        db.session.commit()
         flash('Order Successfully Completed', 'success')
         checkStock()
         
@@ -237,13 +239,19 @@ def register():
         
         new_user = User(username=username,name=name, password=password,email=email, address=address,is_member= isMember)
         db.session.add(new_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except:
+            flash('Registration failed, username already exists', 'danger')
+            return redirect(url_for('register'))
+
         flash('Successfully Registered', 'success')
-        redirect(url_for('login'))
+        return redirect(url_for('login'))
 
 
     if request.method == 'POST' and not form.validate_on_submit():
         flash('Error in form, please check input', 'danger')
+        return redirect(url_for('register'))
     
     return render_template('register.html', form=form)
 
@@ -292,6 +300,7 @@ def login():
             return redirect(next_page or url_for('home'))
         else:
             flash('Username or Password is incorrect.', 'danger')
+            #return redirect
 
     flash_errors(form)
     return render_template('login.html', form=form)
@@ -368,6 +377,7 @@ def addPromo():
         db.session.add(promo)
         db.session.commit()
         flash('Promotion Added', 'success')
+        return redirect(url_for('get_books'))
     return render_template("promotion.html", form = form)
 
 

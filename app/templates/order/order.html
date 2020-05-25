@@ -74,8 +74,10 @@
                                 <tbody>
                                     
                                     <tr>
+                                        {% if app%}
                                         <td>{{app.promoCode}}</td>
                                         <td>{{'%0.2f'|format(app.percoff|float)}}</td>
+                                        {%endif%}
                                     </tr>
                                     
                                 </tbody>                                
