@@ -239,7 +239,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         flash('Successfully Registered', 'success')
-        redirect(url_for('get_books'))
+        redirect(url_for('login'))
 
 
     if request.method == 'POST' and not form.validate_on_submit():
